@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload Photos & Videos</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:20px}
+    h1{font-size:1.4rem}
+    .preview{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+    .thumb{width:150px;height:100px;border:1px solid #ddd;padding:6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa}
+    .thumb img, .thumb video{max-width:100%;max-height:100%}
+    .note{font-size:0.9rem;color:#444;margin-top:8px}
+    button{margin-top:12px;padding:10px 16px}
+  </style>
+</head>
+<body>
+  <h1>Upload Photos & Videos</h1>
+  <p class="note">Select images (jpg, png, gif) and videos (mp4, webm). Multiple files allowed. Max 20 MB / file.</p>
+
+  <form id="uploadForm" action="upload.php" method="post" enctype="multipart/form-data">
+    <input id="filesInput" type="file" name="media_files[]" multiple accept="image/*,video/*" />
+    <div class="preview" id="preview"></div>
+
+    <!-- Optional fields -->
+    <div style="margin-top:10px">
+      <label>
+        Your name:
+        <input type="text" name="uploader_name" maxlength="80" />
+      </label>
+    </div>
+
+    <button type="submit">Upload Selected Files</button>
+  </form>
+
+  <script>
+    const input = document.getElementById('filesInput');
+    const preview = document.getElementById('preview');
+
+    input.addEventListener('change', () => {
+      preview.innerHTML = '';
+      const files = Array.from(input.files).slice(0, 20); // show up to 20 previews to avoid UI lag
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const box = document.createElement('div');
+        box.className = 'thumb';
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = file.name;
+          box.appendChild(img);
+        } else if (file.type.startsWith('video/')) {
+          const vid = document.createElement('video');
+          vid.src = url;
+          vid.controls = true;
+          vid.preload = 'metadata';
+          vid.style.maxHeight = '100px';
+          box.appendChild(vid);
+        } else {
+          box.textContent = file.name;
+        }
+        preview.appendChild(box);
+        // release object URL when video/image loaded (optional)
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      });
+    });
+  </script>
+</body>
+</html>
+
